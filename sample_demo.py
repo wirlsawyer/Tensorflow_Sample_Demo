@@ -1,5 +1,6 @@
 import random
 import tensorflow as tf
+import numpy as np
 
 # Data sets
 DATA_TRAINING = "sample.csv"
@@ -98,7 +99,7 @@ sess.run(init)
 for i in range(1000):
     batch_xs, batch_ys = next_batch(50, training_set)
     sess.run(train_step, feed_dict={xs:batch_xs, ys:batch_ys})
-    if i % 20 == 0:
+    if i % 50 == 0:
         print("Accuracy:", compute_accuracy(test_set.data, fix_targetData(test_set)))
         print ("Loss:", sess.run(cross_entropy, feed_dict={xs:batch_xs, ys:batch_ys}))
         print("Weights:", sess.run(Weights))
@@ -111,11 +112,6 @@ print("\n")
 print("Final Biases:", sess.run(biases))
 print("-------------------------------------------------\n")
         
-xx = np.array([ [0, 0], 
-                [0, 1],
-                [1, 0],
-                [1, 1]])
-y_pre = sess.run(prediction, feed_dict={xs:xx})
 
 
 def get_index(ds):
@@ -129,6 +125,38 @@ def get_index(ds):
         count = count + 1    
     return result
     
+def print_confusion_matrix(ds):
+    confusion_matrix = np.zeros((y_dimension, y_dimension))
+    y_pre = sess.run(prediction, feed_dict={xs:ds.data})
+    for i in range(len(ds.data)):
+        row = ds.target[i]
+        col = get_index(y_pre[i])
+        value = confusion_matrix[row, col]
+        confusion_matrix[row, col] = value+1
+    
+    print("Confusion Matrix:")
+    print('{:3}'.format(' '), end='')
+    for i in range(y_dimension):
+        print('{:3}'.format(i), end='')
+    print("")    
+    for i in range(y_dimension):
+        print('{:3}'.format(i), end='')
+        for j in range(y_dimension):
+            print('{:3}'.format(int(confusion_matrix[i, j])), end='')
+        print("")
+            
+    #print(confusion_matrix)
+    
+print_confusion_matrix(test_set)          
+    
+
+    
+xx = np.array([ [0, 0], 
+                [0, 1],
+                [1, 0],
+                [1, 1]])
+y_pre = sess.run(prediction, feed_dict={xs:xx})
+
 for i in range(len(y_pre.data)):
     print(xx[i], "=>", get_index(y_pre[i]), y_pre[i])
     
